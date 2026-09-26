@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { config } from '../config.ts';
 
 export function csrfProtection(req, res, next) {
   const method = req.method.toUpperCase();
@@ -23,7 +24,7 @@ export function generateCsrfToken() {
 export function setCsrfCookie(res, token) {
   res.cookie('_csrf', token, {
     httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
+    secure: config.CSRF_SECURE === 'true',
     sameSite: 'lax',
     maxAge: 7 * 24 * 3600 * 1000,
   });

@@ -36,6 +36,7 @@ services:
       REGISTRATION_INVITE_CODE: ${REGISTRATION_INVITE_CODE:?REGISTRATION_INVITE_CODE must be set}
       PORT: "4001"
       NODE_ENV: ${NODE_ENV:-development}
+      CSRF_SECURE: ${CSRF_SECURE:-true}
     ports:
       - "127.0.0.1:${BACKEND_PORT:-4001}:4001"
     depends_on:
@@ -59,7 +60,7 @@ services:
     environment:
       VITE_API_TARGET: ${VITE_API_TARGET:-http://backend:4001}
     ports:
-      - "127.0.0.1:${FRONTEND_PORT:-5174}:5174"
+      - "${HOST_BIND:-127.0.0.1}:${FRONTEND_PORT:-5174}:5174"
     depends_on:
       backend:
         condition: service_healthy
@@ -81,7 +82,7 @@ services:
     security_opt:
       - no-new-privileges:true
     ports:
-      - "127.0.0.1:${PREVIEW_PORT:-8081}:80"
+      - "${HOST_BIND:-127.0.0.1}:${PREVIEW_PORT:-8081}:80"
     depends_on:
       backend:
         condition: service_healthy

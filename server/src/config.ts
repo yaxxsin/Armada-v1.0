@@ -11,6 +11,9 @@ const envSchema = z.object({
   BOOTSTRAP_TOKEN: z.string().min(24).optional(),
   REGISTRATION_INVITE_CODE: z.string().min(16).optional(),
   PORT: z.coerce.number().int().positive().default(4001),
+  // Cookie CSRF hanya ditandai "secure" (harus HTTPS) bila aplikasi diakses lewat HTTPS.
+  // Set CSRF_SECURE=false saat memakai plain HTTP di IP VM, jika tidak browser menolak cookie.
+  CSRF_SECURE: z.enum(['true', 'false']).default('true'),
 });
 
 export const config = envSchema.parse(process.env);

@@ -45,6 +45,44 @@ Alias `production` tetap tersedia:
 docker compose --profile production up --build
 ```
 
+### Deployment production di server VM (akses via IP)
+
+Secara default semua port di-bind ke `127.0.0.1`, jadi hanya bisa diakses dari
+localhost server. Untuk dapat diakses dari IP VM, ubah `HOST_BIND` di `.env`:
+
+```env
+HOST_BIND=0.0.0.0
+CLIENT_ORIGIN=http://<IP_VM>:8081
+CSRF_SECURE=false
+```
+
+Lalu jalankan:
+
+```bash
+docker compose --profile production up -d --build
+```
+
+Akses `http://<IP_VM>:8081`.
+
+Catatan:
+
+- `HOST_BIND=0.0.0.0` hanya mengubah interface tempat port di-publish. Komunikasi
+  antar container tetap lewat DNS internal Docker (`db`, `backend`), bukan IP container.
+- Port database (5433) dan backend (4001) tetap di-bind ke `127.0.0.1` sehingga
+  tidak terekspos ke jaringan. Pastikan tidak ada proses lain yang memakai
+  `VITE_API_TARGET` atau `nginx.conf` yang mengarah ke IP container secara hardcoded.
+- `CLIENT_ORIGIN` harus persis sama dengan URL di address bar, termasuk port,
+  karena CORS backend memblokir origin yang tidak cocok.
+- `CSRF_SECURE=false` diperlukan hanya saat memakai HTTP biasa. Jika diakses lewat
+  HTTPS (misalnya di belakang reverse proxy), biarkan `true`.
+
+#### Alternatif: reverse proxy di host
+
+Lebih aman daripada `0.0.0.0` adalah membiarkan `HOST_BIND=127.0.0.1` dan
+meneruskan port ke host pakai Nginx Proxy Manager / Caddy / Nginx di host.
+Dengan begitu container tetap privat, traffic masuk lewat HTTPS, dan
+`CSRF_SECURE` tetap `true`.
+
 ### Development tanpa Docker
 
 Jalankan backend dan frontend secara terpisah:
