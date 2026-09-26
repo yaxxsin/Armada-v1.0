@@ -1,0 +1,36 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+.env
+.env.*
+!.env.example
+*.local
+backups/
+
+# Local Excel workbooks and temporary lock files
+*.xlsx
+*.xls
+~$*
+
+# Generated report output from offline report smoke tests
+server/tmp/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

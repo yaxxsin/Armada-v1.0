@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+docker-compose.yml
+.git
+.git/
+.DS_Store
+server/
+server/node_modules
+backups/
+dist
+.env
+.env.*
+!.env.example
+*.xlsx
+*.xls
+~$*
+.kilo
