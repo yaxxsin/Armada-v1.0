@@ -59,6 +59,8 @@ services:
       - no-new-privileges:true
     environment:
       VITE_API_TARGET: ${VITE_API_TARGET:-http://backend:4001}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-}
+      ALLOWED_HOSTS_FALLBACK: ${ALLOWED_HOSTS_FALLBACK:-}
     ports:
       - "${HOST_BIND:-127.0.0.1}:${FRONTEND_PORT:-5174}:5174"
     depends_on:
