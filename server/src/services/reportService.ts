@@ -33,11 +33,31 @@ function groupBy(items, key) {
  * always a full snapshot, never a page of the interactive list.
  */
 export async function buildReport(filters: ReportFilters = {}) {
+  // Kolom foto sengaja tidak diambil. Laporan hanya butuh jumlah dan
+  // ada/tidaknya foto, sedangkan `foto`/`photos` berisi data URL base64
+  // yang berukuran ratusan KB per kendaraan. Menghitungnya di SQL membuat
+  // laporan tidak menarik data gambar yang tidak pernah ditampilkan.
   const { rows: vehicles } = await query(
-    `SELECT * FROM vehicles ORDER BY plat NULLS LAST, id`
+    `SELECT
+       id, plat, merk, tahun, lokasi, pic,
+       pajak_tahunan_berlaku, pajak_5tahunan_berlaku, keur_berlaku,
+       interval_km, interval_bulan, km_sekarang, catatan, created_by,
+       CASE
+         WHEN jsonb_array_length(COALESCE(photos, '[]'::jsonb)) > 0
+           THEN jsonb_array_length(COALESCE(photos, '[]'::jsonb))
+         WHEN COALESCE(foto, '') <> '' THEN 1
+         ELSE 0
+       END AS photo_count
+     FROM vehicles
+     ORDER BY plat NULLS LAST, id`
   );
   const { rows: history } = await query(
-    `SELECT * FROM service_history ORDER BY tanggal DESC NULLS LAST, id DESC`
+    // `struk` adalah data URL base64. Laporan hanya menampilkan "ada/tidak",
+    // jadi cukup diambil sebagai boolean.
+    `SELECT id, vehicle_id, tanggal, km, jenis, biaya, bengkel,
+            COALESCE(struk, '') <> '' AS has_struk
+     FROM service_history
+     ORDER BY tanggal DESC NULLS LAST, id DESC`
   );
   const { rows: readings } = await query(
     `SELECT vehicle_id, reading_date, odometer_km, source, is_correction
@@ -55,7 +75,7 @@ export async function buildReport(filters: ReportFilters = {}) {
       jenis: row.jenis,
       biaya: row.biaya,
       bengkel: row.bengkel,
-      struk: row.struk,
+      hasStruk: Boolean(row.has_struk),
     });
   }
 
@@ -75,11 +95,6 @@ export async function buildReport(filters: ReportFilters = {}) {
   const rows = dtos.map((v) => {
     const c = computeVehicle({ ...v, history: v.serviceHistory });
     const odometerHistory = readingsByVehicle.get(v.id) || [];
-    const photos = Array.isArray(v.photos) && v.photos.length
-      ? v.photos
-      : v.foto
-        ? [v.foto]
-        : [];
     const history = v.serviceHistory || [];
     const status = overallStatus({ ...v, history });
 
@@ -91,7 +106,7 @@ export async function buildReport(filters: ReportFilters = {}) {
       lokasi: v.lokasi,
       pic: v.pic,
       catatan: v.catatan,
-      photos,
+      photoCount: Number(v.photo_count) || 0,
       intervalKm: v.intervalKm || DEFAULTS.intervalKm,
       intervalBulan: v.intervalBulan || DEFAULTS.intervalBulan,
       kmSekarang: v.kmSekarang,
@@ -221,7 +236,7 @@ function buildSummary(rows) {
     if (row.overallStatus === 'red') summary.red++;
     else if (row.overallStatus === 'amber') summary.amber++;
     else summary.ok++;
-    summary.totalPhotos += row.photos.length;
+    summary.totalPhotos += row.photoCount;
     summary.totalOdometer += Number(row.kmSekarang || 0);
     summary.totalServiceCost += Number(row.serviceCostTotal || 0);
     if (row.pajakTahunanStatus !== 'ok') summary.duePajakTahunan++;

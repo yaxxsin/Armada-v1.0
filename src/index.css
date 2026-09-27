@@ -1148,6 +1148,54 @@ h3 {
   color: var(--text-faint);
 }
 
+/* ─── Konfirmasi hapus kendaraan (permanen) ─────────── */
+.confirm-delete {
+  max-width: 460px;
+}
+
+.confirm-delete__losses {
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--danger, #ff6b68);
+  border-radius: 8px;
+  background: rgba(255, 107, 104, 0.07);
+}
+
+.confirm-delete__losses-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--danger, #ff6b68);
+  margin-bottom: 6px;
+}
+
+.confirm-delete__loss {
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.confirm-delete__loss::before {
+  content: "\00d7\00a0";
+  color: var(--danger, #ff6b68);
+  font-weight: 700;
+}
+
+.confirm-delete__label {
+  display: block;
+  margin: 14px 0 6px;
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.confirm-delete__label code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--panel, #f6f7f9);
+  color: var(--ink, #111);
+}
+
 /* ─── Application shell / navigation ───────────────── */
 .app-shell {
   min-height: 100vh;

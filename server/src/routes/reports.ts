@@ -66,7 +66,7 @@ router.get('/fleet', async (req, res) => {
       nextServiceKm: row.nextServiceKm,
       kmLeft: row.kmLeft,
       serviceCount: row.serviceCount,
-      photoCount: row.photos.length,
+      photoCount: row.photoCount,
     })),
   });
 });

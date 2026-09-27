@@ -32,6 +32,7 @@ import SkeletonTable from './components/SkeletonTable';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import UserManagement from './components/UserManagement';
+import ConfirmDeleteVehicleModal from './components/ConfirmDeleteVehicleModal';
 import ReportView from './components/ReportView';
 import type { AppView } from './components/AppNavbar';
 
@@ -236,12 +237,39 @@ export default function App() {
     setFormModalVehicle(null);
   };
 
-  const handleDeleteVehicle = async (id: string) => {
-    if (!confirm('Hapus kendaraan ini dari daftar armada?')) return;
-    await deleteVehicle(id);
-    setFormModalVehicle(null);
-    setDetailVehicleId(null);
-    setDetailVehicleOverride(null);
+  // Hapus kendaraan memakai dialog konfirmasi khusus (bukan confirm() bawaan)
+  // karena satu hapus juga menghapus foto, riwayat servis, dan pembacaan
+  // odometer secara permanen lewat ON DELETE CASCADE.
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const openDeleteVehicle = (id: string) => {
+    const vehicle =
+      fleet.find((item) => String(item.id) === String(id))
+      || (detailVehicleOverride?.id === id ? detailVehicleOverride : null);
+    if (!vehicle) return;
+    setDeleteError(null);
+    setDeleteTarget(vehicle);
+  };
+
+  const handleDeleteVehicle = async () => {
+    if (!deleteTarget) return;
+    setDeleteBusy(true);
+    setDeleteError(null);
+    try {
+      await deleteVehicle(deleteTarget.id);
+      setDeleteTarget(null);
+      setFormModalVehicle(null);
+      setDetailVehicleId(null);
+      setDetailVehicleOverride(null);
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error ? error.message : 'Gagal menghapus kendaraan.'
+      );
+    } finally {
+      setDeleteBusy(false);
+    }
   };
 
   const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -329,16 +357,21 @@ export default function App() {
   const openVehicleById = async (id: string) => {
     setDetailError(null);
     const localVehicle = fleet.find((vehicle) => String(vehicle.id) === String(id));
-    if (localVehicle) {
-      setDetailVehicleId(localVehicle.id);
-      setDetailVehicleOverride(null);
-      return;
-    }
+    // Daftar armada tidak lagi membawa kolom foto, jadi detail selalu dimuat
+    // ulang dari server. Data lokal tetap ditampilkan lebih dulu supaya modal
+    // terbuka tanpa menunggu, lalu ditimpa hasil fetch yang memuat foto dan
+    // data terbaru.
+    setDetailVehicleOverride(localVehicle || null);
+    setDetailVehicleId(localVehicle ? localVehicle.id : id);
     try {
       const response = await api(`/vehicles/${id}`);
       setDetailVehicleOverride(response.vehicle);
       setDetailVehicleId(response.vehicle.id);
     } catch (error) {
+      // Kalau data lokal sudah tampil, ini bukan kondisi gagal buka.
+      if (localVehicle) return;
+      setDetailVehicleOverride(null);
+      setDetailVehicleId(null);
       setDetailError(error instanceof Error ? error.message : 'Kendaraan tidak dapat dibuka.');
     }
   };
@@ -653,7 +686,7 @@ export default function App() {
         <VehicleFormModal
           vehicle={formModalVehicle}
           onSave={handleSaveVehicle}
-          onDelete={handleDeleteVehicle}
+          onDelete={openDeleteVehicle}
           onClose={() => setFormModalVehicle(null)}
         />
       )}
@@ -667,9 +700,26 @@ export default function App() {
             setDetailVehicleOverride(null);
           }}
           onEdit={openEditForm}
-          onDelete={handleDeleteVehicle}
+          onDelete={openDeleteVehicle}
           onAddHistory={addHistory}
           onDeleteHistory={deleteHistory}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmDeleteVehicleModal
+          plat={deleteTarget.plat || ''}
+          serviceCount={deleteTarget.serviceHistory?.length || 0}
+          photoCount={deleteTarget.photos?.length || 0}
+          odometerCount={deleteTarget.odometerHistory?.length || 0}
+          busy={deleteBusy}
+          error={deleteError}
+          onCancel={() => {
+            if (deleteBusy) return;
+            setDeleteTarget(null);
+            setDeleteError(null);
+          }}
+          onConfirm={handleDeleteVehicle}
         />
       )}
     </div>
