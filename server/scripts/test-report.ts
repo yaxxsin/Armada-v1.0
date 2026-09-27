@@ -14,6 +14,48 @@ const iso = (offsetDays: number) => {
 
 const vehicles = [
   {
+    // Long vehicle/location/PIC names on purpose: these wrap to a second line
+    // and used to be clipped by the fixed-height table rows.
+    id: 4,
+    plat: 'B 104 RFH',
+    merk: 'Motor Honda Beat CBS ISS 2020 125',
+    tahun: '2021',
+    lokasi: 'Jatinegara Uttara',
+    pic: 'Abel / Karma Sihombing',
+    catatan: '',
+    photos: [],
+    intervalKm: 5000,
+    intervalBulan: 6,
+    kmSekarang: 51955,
+    pajakTahunanBerlaku: iso(75),
+    pajakTahunanStatus: 'ok',
+    pajakTahunanDays: 75,
+    pajak5TahunanBerlaku: iso(300),
+    pajak5TahunanStatus: 'ok',
+    pajak5TahunanDays: 300,
+    keurBerlaku: iso(90),
+    keurStatus: 'ok',
+    keurDays: 90,
+    lastService: { tanggal: iso(-100), km: 50000, jenis: 'Servis berkala + ganti kampas rem', bengkel: 'Bengkel Kalideran', biaya: 950000 },
+    nextServiceDate: iso(40),
+    nextServiceKm: 55000,
+    kmLeft: 3045,
+    serviceDaysDate: 40,
+    serviceStatus: 'ok',
+    overallStatus: 'ok',
+    overallStatusText: 'Aman',
+    serviceHistory: [
+      { tanggal: iso(-100), km: 50000, jenis: 'Servis berkala + ganti kampas rem', bengkel: 'Bengkel Kalideran', biaya: 950000 },
+    ],
+    serviceCount: 1,
+    serviceCostTotal: 950000,
+    odometerHistory: [
+      { tanggal: iso(-7), km: 51955, sumber: 'excel', koreksi: false },
+    ],
+    odometerReadingCount: 1,
+    createdAt: '2021-05-04T08:00:00.000Z',
+  },
+  {
     id: 1,
     plat: 'B 1234 XYZ',
     merk: 'Toyota Hilux',

@@ -1,5 +1,5 @@
 import type { buildReport } from './reportService.ts';
-import { complianceText, daysLabel, formatDate, formatNumber, formatTimestamp } from './reportFormat.ts';
+import { complianceText, daysLabel, formatDate, formatInstantDate, formatNumber, formatTimestamp } from './reportFormat.ts';
 import { buildWorkbook } from './xlsxWriter.ts';
 import type { Cell, Sheet, SheetColumn } from './xlsxWriter.ts';
 
@@ -90,7 +90,7 @@ function summarySheet(report: Report): Sheet {
     titleRow('Laporan Armada 104 Group'),
     [
       { value: 'Tanggal Laporan', type: 'label' },
-      { value: formatDate(report.generatedAt), type: 'date' },
+      { value: formatInstantDate(report.generatedAt), type: 'date' },
     ],
     [
       { value: 'Waktu Dibuat', type: 'label' },

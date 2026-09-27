@@ -4,6 +4,7 @@ import {
   complianceText,
   daysLabel,
   formatDate,
+  formatInstantDate,
   formatNumber,
   formatTimestamp,
 } from './reportFormat.ts';
@@ -12,6 +13,15 @@ type Report = Awaited<ReturnType<typeof buildReport>>;
 
 const A4 = { width: 595.28, height: 841.89 };
 const MARGIN = 40;
+
+// Vertical padding inside a table row, above and below the text block.
+const ROW_PAD_Y = 5;
+// Horizontal padding between a cell border and its text.
+const CELL_PAD_X = 5;
+// Height of a row whose cells all fit on a single line.
+const ROW_MIN_HEIGHT = 17;
+// Narrowest a column may become while still showing a date or a short number.
+const MIN_COL_WIDTH = 36;
 
 const COLORS = {
   ink: '#111111',
@@ -32,6 +42,17 @@ const COLORS = {
 };
 
 type Tone = 'ok' | 'amber' | 'red' | 'none';
+
+type Column = {
+  label: string;
+  width: number;
+  align: 'left' | 'right' | 'center';
+  /**
+   * Width this column must keep when the table is squeezed. Dates and fixed
+   * labels need more than a bare minimum or PDFKit breaks them mid-word.
+   */
+  min?: number;
+};
 
 function toneColors(tone: Tone) {
   switch (tone) {
@@ -59,7 +80,7 @@ class PdfReport {
       margins: { top: MARGIN, bottom: MARGIN, left: MARGIN, right: MARGIN },
       bufferPages: true,
       info: {
-        Title: `Laporan Armada 104 Group - ${formatDate(report.generatedAt)}`,
+        Title: `Laporan Armada 104 Group - ${formatInstantDate(report.generatedAt)}`,
         Author: 'Armada Control 104 Group',
         Subject: 'Laporan kepatuhan dan status armada',
         Creator: 'Armada Control',
@@ -136,12 +157,19 @@ class PdfReport {
     }
   }
 
-  private ensureSpace(height) {
-    if (this.doc.y + height > A4.height - MARGIN - 24) {
-      this.doc.addPage();
-      this.drawPageHeader();
-      this.doc.y = MARGIN + 38;
-    }
+  /** True when `height` more points would not fit above the footer. */
+  private wouldOverflow(height: number) {
+    return this.doc.y + height > A4.height - MARGIN - 24;
+  }
+
+  private breakPage() {
+    this.doc.addPage();
+    this.drawPageHeader();
+    this.doc.y = MARGIN + 38;
+  }
+
+  private ensureSpace(height: number) {
+    if (this.wouldOverflow(height)) this.breakPage();
   }
 
   private sectionTitle(title, subtitle) {
@@ -170,7 +198,7 @@ class PdfReport {
     doc.rect(MARGIN, 190, 56, 3).fill(COLORS.lime);
 
     doc.font('Helvetica-Bold').fontSize(30).fillColor(COLORS.ink).text('Laporan Armada', MARGIN, 214);
-    doc.font('Helvetica-Bold').fontSize(30).fillColor(COLORS.dim).text('Periode ' + formatDate(this.report.generatedAt), MARGIN, 250);
+    doc.font('Helvetica-Bold').fontSize(30).fillColor(COLORS.dim).text('Periode ' + formatInstantDate(this.report.generatedAt), MARGIN, 250);
 
     doc.font('Helvetica').fontSize(10).fillColor(COLORS.body);
     doc.text(
@@ -204,7 +232,7 @@ class PdfReport {
     });
 
     const meta = [
-      ['Tanggal laporan', formatDate(this.report.generatedAt)],
+      ['Tanggal laporan', formatInstantDate(this.report.generatedAt)],
       ['Waktu dibuat', formatTimestamp(this.report.generatedAt)],
       ['Filter lokasi', this.report.filters.lokasi === 'all' ? 'Semua lokasi' : this.report.filters.lokasi],
       ['Filter status', this.report.filters.scope === 'all' ? 'Semua status' : this.report.filters.scope],
@@ -293,21 +321,19 @@ class PdfReport {
   breakdownTable() {
     const { doc } = this;
     this.sectionTitle('Ringkasan per Lokasi', 'Status kepatuhan tiap lokasi');
-    const columns = [
-      { label: 'Lokasi', width: 150, align: 'left' as const },
-      { label: 'Total', width: 45, align: 'right' as const },
-      { label: 'Aman', width: 45, align: 'right' as const },
-      { label: 'Perhatian', width: 70, align: 'right' as const },
-      { label: 'Terlambat', width: 65, align: 'right' as const },
-      { label: 'Odometer', width: 70, align: 'right' as const },
-      { label: 'Biaya Servis', width: 100, align: 'right' as const },
-    ];
-    const tableWidth = columns.reduce((sum, c) => sum + c.width, 0);
+    const { columns, tableWidth } = this.tableLayout([
+      { label: 'Lokasi', width: 150, align: 'left' },
+      { label: 'Total', width: 45, align: 'right', min: 45 },
+      { label: 'Aman', width: 45, align: 'right', min: 45 },
+      { label: 'Perhatian', width: 70, align: 'right', min: 62 },
+      { label: 'Terlambat', width: 65, align: 'right', min: 60 },
+      { label: 'Odometer', width: 70, align: 'right', min: 56 },
+      { label: 'Biaya Servis', width: 100, align: 'right', min: 70 },
+    ]);
 
     this.drawTableHeader(columns, tableWidth);
     for (const item of this.report.breakdown) {
       this.ensureSpace(20);
-      const rowY = doc.y;
       const cells = [
         item.lokasi,
         String(item.total),
@@ -317,16 +343,61 @@ class PdfReport {
         `${formatNumber(item.totalOdometer)} km`,
         `Rp ${formatNumber(item.totalServiceCost)}`,
       ];
-      this.drawRow(cells, columns, tableWidth, rowY, (index) => {
+      this.drawRow(cells, columns, tableWidth, (index) => {
         if (index === 3) return item.amber > 0 ? COLORS.amber : COLORS.dim;
         if (index === 4) return item.red > 0 ? COLORS.red : COLORS.dim;
         return COLORS.body;
-      });
+      }, () => this.drawTableHeader(columns, tableWidth));
     }
     doc.y += 12;
   }
 
-  private drawTableHeader(columns, tableWidth) {
+  /**
+   * Rescales declared column widths so the table always spans exactly the
+   * printable width, without shrinking any column below its floor. Without
+   * this a hand-tuned set of widths silently runs off the right edge of the
+   * page and the trailing columns get cut away.
+   */
+  private fitColumns(columns: Column[]): Column[] {
+    const target = this.contentWidth;
+    const total = columns.reduce((sum, column) => sum + column.width, 0);
+    if (Math.abs(total - target) < 0.5) return columns;
+
+    if (total < target) {
+      // Spare room: hand it to the widest column rather than spreading it thin.
+      let widest = 0;
+      for (let i = 1; i < columns.length; i += 1) {
+        if (columns[i].width > columns[widest].width) widest = i;
+      }
+      return columns.map((column, index) =>
+        index === widest ? { ...column, width: column.width + (target - total) } : column
+      );
+    }
+
+    const scale = target / total;
+    const widths = columns.map((column) => Math.max(column.min ?? MIN_COL_WIDTH, column.width * scale));
+    const floored = widths.reduce((sum, width) => sum + width, 0);
+    if (floored > target) {
+      // Floors alone already overflow; the widest column gives ground instead.
+      let widest = 0;
+      for (let i = 1; i < widths.length; i += 1) {
+        if (widths[i] > widths[widest]) widest = i;
+      }
+      widths[widest] -= floored - target;
+    }
+    return columns.map((column, index) => ({ ...column, width: widths[index] }));
+  }
+
+  /** Fits the columns to the page and returns them with the resulting width. */
+  private tableLayout(columns: Column[]) {
+    const fitted = this.fitColumns(columns);
+    return {
+      columns: fitted,
+      tableWidth: fitted.reduce((sum, column) => sum + column.width, 0),
+    };
+  }
+
+  private drawTableHeader(columns: Column[], tableWidth: number) {
     const { doc } = this;
     this.ensureSpace(24);
     const y = doc.y;
@@ -337,33 +408,80 @@ class PdfReport {
         .font('Helvetica-Bold')
         .fontSize(7)
         .fillColor(COLORS.white)
-        .text(column.label.toUpperCase(), x + 5, y + 6, { width: column.width - 10, align: column.align });
+        .text(column.label.toUpperCase(), x + CELL_PAD_X, y + 6, {
+          width: this.cellWidth(column),
+          align: column.align,
+          lineBreak: false,
+          ellipsis: true,
+        });
       x += column.width;
     }
     doc.y = y + 18;
   }
 
-  private drawRow(cells, columns, tableWidth, rowY, colorFor?) {
+  /** Usable text width inside a column, once the cell padding is removed. */
+  private cellWidth(column: Column) {
+    return Math.max(MIN_COL_WIDTH, column.width) - CELL_PAD_X * 2;
+  }
+
+  /**
+   * Height needed to show every cell of a row without clipping or overlap.
+   * Long values (model names, workshop names) wrap onto a second line, so the
+   * row has to grow instead of painting over them.
+   */
+  private measureRow(cells: string[], columns: Column[]) {
     const { doc } = this;
-    if (doc.y !== rowY) rowY = doc.y;
-    doc.rect(MARGIN, rowY, tableWidth, 17).fill(COLORS.panel);
-    let x = MARGIN;
+    doc.font('Helvetica').fontSize(7.5);
+    let textHeight = 0;
     cells.forEach((cell, index) => {
+      const height = doc.heightOfString(cell, { width: this.cellWidth(columns[index]) });
+      if (height > textHeight) textHeight = height;
+    });
+    return Math.max(ROW_MIN_HEIGHT, Math.ceil(textHeight) + ROW_PAD_Y * 2);
+  }
+
+  private drawRow(
+    cells: string[],
+    columns: Column[],
+    tableWidth: number,
+    colorFor?: (index: number) => string,
+    repeatHeader?: () => void,
+  ) {
+    const { doc } = this;
+    const values = cells.map((cell) => String(cell));
+    const rowHeight = this.measureRow(values, columns);
+
+    // Break before painting so a row is never split across pages, and so the
+    // columns stay labelled on every continuation page.
+    if (this.wouldOverflow(rowHeight)) {
+      this.breakPage();
+      repeatHeader?.();
+    }
+
+    const rowY = doc.y;
+    doc.rect(MARGIN, rowY, tableWidth, rowHeight).fill(COLORS.panel);
+    let x = MARGIN;
+    values.forEach((cell, index) => {
       const column = columns[index];
       doc
         .font('Helvetica')
         .fontSize(7.5)
         .fillColor(colorFor ? colorFor(index) : COLORS.body)
-        .text(String(cell), x + 5, rowY + 5, { width: column.width - 10, align: column.align, ellipsis: true });
+        .text(cell, x + CELL_PAD_X, rowY + ROW_PAD_Y, {
+          width: this.cellWidth(column),
+          height: rowHeight - ROW_PAD_Y * 2,
+          align: column.align,
+          ellipsis: true,
+        });
       x += column.width;
     });
     doc
-      .moveTo(MARGIN, rowY + 17)
-      .lineTo(MARGIN + tableWidth, rowY + 17)
+      .moveTo(MARGIN, rowY + rowHeight)
+      .lineTo(MARGIN + tableWidth, rowY + rowHeight)
       .lineWidth(0.5)
       .strokeColor(COLORS.line)
       .stroke();
-    doc.y = rowY + 17;
+    doc.y = rowY + rowHeight;
   }
 
   vehiclePages() {
@@ -375,18 +493,19 @@ class PdfReport {
       `${formatNumber(this.report.rows.length)} kendaraan dalam laporan`
     );
 
-    const columns = [
-      { label: 'Plat', width: 80, align: 'left' as const },
-      { label: 'Merk', width: 95, align: 'left' as const },
-      { label: 'Lokasi', width: 70, align: 'left' as const },
-      { label: 'PIC', width: 65, align: 'left' as const },
-      { label: 'Pajak Th', width: 52, align: 'right' as const },
-      { label: 'Pajak 5Th', width: 52, align: 'right' as const },
-      { label: 'Keur', width: 52, align: 'right' as const },
-      { label: 'Odo (km)', width: 58, align: 'right' as const },
-      { label: 'Status', width: 51, align: 'right' as const },
-    ];
-    const tableWidth = columns.reduce((sum, c) => sum + c.width, 0);
+    // 9 columns share 515pt, so the free-text columns stay narrow on purpose
+    // and wrap; the date columns get a floor wide enough for "2026-12-11".
+    const { columns, tableWidth } = this.tableLayout([
+      { label: 'Plat', width: 58, align: 'left', min: 52 },
+      { label: 'Merk', width: 78, align: 'left' },
+      { label: 'Lokasi', width: 62, align: 'left' },
+      { label: 'PIC', width: 62, align: 'left' },
+      { label: 'Pajak Th', width: 50, align: 'right', min: 50 },
+      { label: 'Pajak 5Th', width: 50, align: 'right', min: 50 },
+      { label: 'Keur', width: 50, align: 'right', min: 50 },
+      { label: 'Odo (km)', width: 44, align: 'right', min: 44 },
+      { label: 'Status', width: 61, align: 'right', min: 56 },
+    ]);
 
     this.drawTableHeader(columns, tableWidth);
     for (const row of this.report.rows) {
@@ -403,7 +522,7 @@ class PdfReport {
         row.overallStatusText,
       ];
       const colors = toneColors(row.overallStatus);
-      this.drawRow(cells, columns, tableWidth, doc.y, (index) => {
+      this.drawRow(cells, columns, tableWidth, (index) => {
         if (index === 8) return colors.text;
         if (index >= 4 && index <= 6) {
           if (index === 4) return toneColors(row.pajakTahunanStatus).text;
@@ -411,7 +530,7 @@ class PdfReport {
           return toneColors(row.keurStatus).text;
         }
         return COLORS.body;
-      });
+      }, () => this.drawTableHeader(columns, tableWidth));
     }
     doc.y += 16;
   }
@@ -500,15 +619,14 @@ class PdfReport {
     this.drawPageHeader();
     this.sectionTitle('Riwayat Servis', `${formatNumber(withHistory.length)} kendaraan memiliki riwayat servis`);
 
-    const columns = [
-      { label: 'Tanggal', width: 62, align: 'left' as const },
-      { label: 'Plat', width: 78, align: 'left' as const },
-      { label: 'KM', width: 62, align: 'right' as const },
-      { label: 'Jenis Servis', width: 140, align: 'left' as const },
-      { label: 'Bengkel', width: 130, align: 'left' as const },
-      { label: 'Biaya', width: 83, align: 'right' as const },
-    ];
-    const tableWidth = columns.reduce((sum, c) => sum + c.width, 0);
+    const { columns, tableWidth } = this.tableLayout([
+      { label: 'Tanggal', width: 62, align: 'left', min: 50 },
+      { label: 'Plat', width: 78, align: 'left' },
+      { label: 'KM', width: 62, align: 'right', min: 46 },
+      { label: 'Jenis Servis', width: 130, align: 'left' },
+      { label: 'Bengkel', width: 120, align: 'left' },
+      { label: 'Biaya', width: 63, align: 'right', min: 58 },
+    ]);
 
     for (const row of withHistory) {
       this.ensureSpace(40);
@@ -540,7 +658,8 @@ class PdfReport {
           ],
           columns,
           tableWidth,
-          doc.y
+          undefined,
+          () => this.drawTableHeader(columns, tableWidth)
         );
       }
       if (row.serviceHistory.length > 12) {
@@ -565,14 +684,13 @@ class PdfReport {
     this.drawPageHeader();
     this.sectionTitle('Riwayat Odometer', 'Pembacaan odometer mingguan per kendaraan');
 
-    const columns = [
-      { label: 'Tanggal', width: 78, align: 'left' as const },
-      { label: 'Plat', width: 88, align: 'left' as const },
-      { label: 'Odometer (km)', width: 95, align: 'right' as const },
-      { label: 'Sumber', width: 90, align: 'left' as const },
-      { label: 'Koreksi', width: 60, align: 'left' as const },
-    ];
-    const tableWidth = columns.reduce((sum, c) => sum + c.width, 0);
+    const { columns, tableWidth } = this.tableLayout([
+      { label: 'Tanggal', width: 78, align: 'left', min: 50 },
+      { label: 'Plat', width: 88, align: 'left' },
+      { label: 'Odometer (km)', width: 95, align: 'right', min: 62 },
+      { label: 'Sumber', width: 90, align: 'left' },
+      { label: 'Koreksi', width: 60, align: 'left' },
+    ]);
 
     for (const row of withReadings) {
       this.ensureSpace(40);
@@ -600,7 +718,8 @@ class PdfReport {
           ],
           columns,
           tableWidth,
-          doc.y
+          undefined,
+          () => this.drawTableHeader(columns, tableWidth)
         );
       }
       if (row.odometerHistory.length > 10) {

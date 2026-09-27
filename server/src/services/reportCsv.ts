@@ -1,5 +1,5 @@
 import type { buildReport } from './reportService.ts';
-import { complianceText, daysLabel, formatDate, formatTimestamp } from './reportFormat.ts';
+import { complianceText, daysLabel, formatDate, formatInstantDate, formatTimestamp } from './reportFormat.ts';
 
 type Report = Awaited<ReturnType<typeof buildReport>>;
 
@@ -98,7 +98,7 @@ export function renderReportCsv(report: Report) {
 
   const meta: Array<[string, string]> = [
     ['LAPORAN ARMADA 104 GROUP', ''],
-    ['Tanggal Laporan', formatDate(report.generatedAt)],
+    ['Tanggal Laporan', formatInstantDate(report.generatedAt)],
     ['Waktu Dibuat', formatTimestamp(report.generatedAt)],
     ['Total Armada', String(report.totals.armadaTotal)],
     ['Kendaraan dalam Laporan', String(report.totals.laporanJumlah)],

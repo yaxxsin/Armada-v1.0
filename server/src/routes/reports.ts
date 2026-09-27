@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import requireAuth, { requireAdmin } from '../middleware/auth.ts';
 import { buildReport } from '../services/reportService.ts';
+import { formatInstantDate } from '../services/reportFormat.ts';
 import type { ReportFilters, ReportScope, ReportSort } from '../services/reportService.ts';
 import { renderReportCsv } from '../services/reportCsv.ts';
 import { renderReportPdf } from '../services/reportPdf.ts';
@@ -26,7 +27,7 @@ function readFilters(req): ReportFilters {
 }
 
 function filenameFor(report, extension) {
-  const date = report.generatedAt.slice(0, 10);
+  const date = formatInstantDate(report.generatedAt);
   const lokasi = report.filters.lokasi === 'all' ? 'semua-lokasi' : report.filters.lokasi;
   const slug = lokasi
     .toLowerCase()

@@ -196,11 +196,15 @@ function formatNumber(value) {
   return numberFormatter.format(Number(value));
 }
 
+// Pinned to WIB to match the exported documents; without this the preview
+// drifts whenever the browser sits in another timezone.
+const REPORT_TIME_ZONE = 'Asia/Jakarta';
+
 function formatTimestamp(value?: string | null) {
   if (!value) return '-';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '-';
-  return `${date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })} ${date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
+  return `${date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', timeZone: REPORT_TIME_ZONE })} ${date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: REPORT_TIME_ZONE })} WIB`;
 }
 
 function scopeText(value: string) {
