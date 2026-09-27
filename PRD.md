@@ -45,7 +45,7 @@ Nilai utama produk:
 ### Gap/risiko yang teridentifikasi
 
 - Belum ada automated test pada root project maupun backend package.
-- `UI_REVISION_PLAN.md` mencatat status implementasi UI dan pekerjaan tersisa.
+- `docs/UI_REVISION_PLAN.md` mencatat status implementasi UI dan pekerjaan tersisa.
 - Fitur user management sudah memiliki komponen dan endpoint, tetapi komponen tersebut belum terlihat terpasang pada halaman utama `App`.
 - Registrasi terbuka untuk pengguna internal. Akun pertama otomatis menjadi admin; akun berikutnya menjadi user.
 - Endpoint kendaraan sudah memiliki pagination/filter server-side, tetapi `App.tsx` masih melakukan filtering dan perhitungan pada data yang diterima. Perlu dipastikan UI menggunakan paginasi dengan benar.
@@ -342,7 +342,7 @@ MVP dinyatakan siap digunakan jika:
 - `server/src/migrations/`
 - `server/src/middleware/`
 - `shared/fleet.ts`
-- `UI_REVISION_PLAN.md`
+- `docs/UI_REVISION_PLAN.md`
 - `README.md`
 - `docker-compose.yml`
 - `package.json` dan `server/package.json`

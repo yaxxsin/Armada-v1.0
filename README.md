@@ -276,7 +276,9 @@ Skrip membuat CSV, PDF, dan XLSX dari data sintetis, memvalidasi header PDF, jum
 - `server/scripts/test-report.ts` — smoke test render PDF, CSV, dan XLSX.
 - `shared/fleet.ts` — perhitungan status armada yang dipakai bersama.
 - `PRD.md` — konteks produk dan requirements.
-- `UI_REVISION_PLAN.md` — status implementasi UI dan pekerjaan yang tersisa.
+- `docs/UI_REVISION_PLAN.md` — status implementasi UI dan pekerjaan yang tersisa.
+- `docs/UI_SECURITY_HARDENING_PLAN.md` — checklist hardening UI dan aksesibilitas.
+- `docs/SECURITY_REMEDIATION_PLAN.md` — rencana remediasi keamanan dan bukti yang dibutuhkan.
 
 ## CatatanProduksi
 
