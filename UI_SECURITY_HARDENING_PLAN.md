@@ -332,27 +332,27 @@ Perubahan:
 ## Verification checklist
 
 ### Security
-- [ ] User tanpa invitation tidak bisa register.
+- [x] User tanpa invitation tidak bisa register.
 - [ ] Registrant pertama tidak otomatis menjadi admin.
-- [ ] User yang dihapus/didemote kehilangan akses pada request berikutnya.
-- [ ] Invalid route ID tidak/crash API.
-- [ ] PostgreSQL tidak publish publik.
-- [ ] Backend tidak bisa diakses langsung dari host production.
-- [ ] Import memvalidasi seluruh payload dan berjalan atomik.
-- [ ] CSV formula dinetralkan.
-- [ ] Health endpoint tidak membocorkan detail database.
+- [x] User yang dihapus/didemote kehilangan akses pada request berikutnya.
+- [x] Invalid route ID tidak/crash API.
+- [x] PostgreSQL tidak publish publik.
+- [x] Backend tidak bisa diakses langsung dari host production.
+- [x] Import memvalidasi seluruh payload dan berjalan atomik.
+- [x] CSV formula dinetralkan.
+- [x] Health endpoint tidak membocorkan detail database.
 - [ ] Log tidak memuat secret/query parameter sensitif.
 
 ### UI
 - [ ] Semua modal memiliki focus trap dan focus restore.
-- [ ] Escape tidak menutup modal saat busy.
-- [ ] Mutation button disabled selama request.
+- [x] Escape tidak menutup modal saat busy.
+- [x] Mutation button disabled selama request.
 - [ ] Form dapat submit dengan Enter.
-- [ ] Tombol Buka reminder selalu membuka detail atau menampilkan error.
-- [ ] Admin tidak bisa self-demote.
-- [ ] User management memiliki busy/retry/error state.
-- [ ] Notification count konsisten.
-- [ ] Dashboard menampilkan refresh loading state.
+- [x] Tombol Buka reminder selalu membuka detail atau menampilkan error.
+- [x] Admin tidak bisa self-demote.
+- [x] User management memiliki busy/retry/error state.
+- [x] Notification count konsisten.
+- [x] Dashboard menampilkan refresh loading state.
 - [ ] Import error dan reminder filter memiliki semantics yang benar.
 - [ ] Tidak ada dead click affordance pada header panel.
 - [ ] Tidak ada horizontal overflow pada 320px.

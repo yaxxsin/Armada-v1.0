@@ -85,10 +85,10 @@ File berikut tidak lagi digunakan oleh aplikasi dan telah dihapus:
 - [x] `npm run lint` berhasil tanpa error dan warning.
 - [x] `npm run build` berhasil.
 - [x] `npm audit --omit=dev` tidak menemukan vulnerability production.
-- [ ] Audit penuh dependency masih melaporkan 2 vulnerability pada dependency development (`nanoid` high dan `postcss` moderate).
+- [x] Audit penuh dependency bersih: `npm audit` melaporkan 0 vulnerability (`nanoid` dan `postcss` sudah dipatch).
 - [x] `git diff --check` berhasil.
-- [ ] `npx tsc --noEmit` belum lulus; masih ada error tipe existing pada frontend/backend dan konfigurasi import extension.
-- [ ] Belum ada automated test suite; belum ditemukan file `*.test.*` atau `*.spec.*`.
+- [x] Typecheck lulus: `npm run typecheck` (frontend) dan `server` sama-sama 0 error.
+- [x] Automated smoke test tersedia: `npm run test:report` (render PDF/XLSX/CSV + pemeriksaan geometri PDF) dan `npm run typecheck`. Unit test `*.test.*` belum ada.
 - [x] Auth frontend berhasil dikompilasi melalui build Vite; lint auth tidak memiliki warning/error.
 - [x] Auth runtime diuji melalui Docker Compose: register, login, session check, dan logout berhasil.
 - [x] Backend diuji terhadap PostgreSQL melalui health check dan endpoint auth.
@@ -130,7 +130,7 @@ Tanggal: 25 September 2026
 - [x] Busy/error state ditambahkan pada form kendaraan dan histori servis.
 - [x] Registrasi tetap direct registration; invite token UI dan endpoint invite dihapus dari alur aktif.
 - [x] Lokasi filter memakai endpoint lokasi terpisah, bukan data halaman aktif.
-- [ ] Finalisasi pembatasan registrasi user internal bila diperlukan.
+- [x] Finalisasi pembatasan registrasi user internal bila diperlukan.
 
 ### Prioritas menengah
 
@@ -143,8 +143,8 @@ Tanggal: 25 September 2026
 ### Prioritas rendah / fase berikutnya
 
 - [ ] Finalisasi definisi bisnis `safe`, `amber`, dan `red`.
-- [ ] Finalisasi pembatasan registrasi user internal, jika diperlukan.
-- [ ] Tambahkan export PDF.
+- [x] Finalisasi pembatasan registrasi user internal, jika diperlukan.
+- [x] Tambahkan export PDF.
 - [ ] Tambahkan scheduled reminder melalui email atau WhatsApp.
 - [ ] Tambahkan WebSocket untuk notifikasi real-time.
 - [ ] Dokumentasikan deployment production, backup, dan restore drill.
@@ -152,14 +152,14 @@ Tanggal: 25 September 2026
 
 ## 8. Kriteria Selesai Tahap UI
 
-- [ ] Dashboard dapat digunakan sebagai halaman default setelah login.
-- [ ] Semua menu utama dapat diakses dengan mouse dan keyboard.
-- [ ] User read-only tidak melihat atau menjalankan aksi mutasi.
-- [ ] Error tidak menghapus seluruh dashboard tanpa recovery action.
+- [x] Dashboard dapat digunakan sebagai halaman default setelah login.
+- [x] Semua menu utama dapat diakses dengan mouse dan keyboard.
+- [x] User read-only tidak melihat atau menjalankan aksi mutasi.
+- [x] Error tidak menghapus seluruh dashboard tanpa recovery action.
 - [ ] Loading, empty, error, dan unauthorized state tervalidasi.
 - [ ] CRUD, histori servis, import, export, reminder, dan pagination tidak mengalami regresi.
 - [ ] Lint, typecheck, build, dan smoke test lulus.
-- [ ] Tidak ada secret atau data sensitif baru yang terekspos ke client.
+- [x] Tidak ada secret atau data sensitif baru yang terekspos ke client.
 
 ## 9. Catatan Teknis
 

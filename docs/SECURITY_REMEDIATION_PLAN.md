@@ -883,7 +883,7 @@ Buat evidence repository untuk:
 - [ ] Tidak ada secret dalam image/cache/log.
 - [ ] Tidak ada critical/high vulnerability tanpa risk acceptance.
 - [ ] Role dan scope authorization tervalidasi melalui API dan browser.
-- [ ] Full export sesuai authorization matrix.
+- [x] Full export sesuai authorization matrix.
 - [ ] Session logout/revoke tervalidasi.
 - [ ] CSRF dan trusted proxy tervalidasi.
 - [ ] Database runtime tidak superuser.
@@ -892,22 +892,22 @@ Buat evidence repository untuk:
 
 ## Functional
 
-- [ ] Build frontend lulus.
-- [ ] Typecheck frontend/backend lulus.
+- [x] Build frontend lulus.
+- [x] Typecheck frontend/backend lulus.
 - [ ] Export JSON/CSV lulus.
 - [ ] Import dan round-trip export/import lulus.
 - [ ] Status `safe/due/overdue/unverified` konsisten.
-- [ ] Odometer correction sesuai aturan.
-- [ ] User mutation ditolak.
+- [x] Odometer correction sesuai aturan.
+- [x] User mutation ditolak.
 - [ ] Admin last-account invariant aman.
 
 ## Infrastructure
 
-- [ ] Production memakai static frontend.
+- [x] Production memakai static frontend.
 - [ ] TLS/HSTS/CSP active.
 - [ ] Container non-root.
 - [ ] Image digest dan scan evidence tersedia.
-- [ ] Database tidak publish public.
+- [x] Database tidak publish public.
 - [ ] Backup encrypted/off-host.
 - [ ] Restore drill PASS.
 
