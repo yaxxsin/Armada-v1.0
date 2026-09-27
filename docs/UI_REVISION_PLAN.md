@@ -77,7 +77,7 @@ File berikut tidak lagi digunakan oleh aplikasi dan telah dihapus:
 - `public/icons.svg` — tidak direferensikan oleh frontend.
 - `server/src/utils/inviteToken.ts` dan `server/src/migrations/002_invite_tokens.sql` — invite flow tidak lagi menjadi bagian produk.
 
-`PRD.md` tetap dipertahankan sebagai konteks produk dan keputusan bisnis. `UI_REVISION_PLAN.md` menjadi satu-satunya dokumen status implementasi UI.
+`PRD.md` tetap dipertahankan sebagai konteks produk dan keputusan bisnis. `docs/UI_REVISION_PLAN.md` menjadi satu-satunya dokumen status implementasi UI.
 
 ## 5. Hasil Validasi Terakhir
 
