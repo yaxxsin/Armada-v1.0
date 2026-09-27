@@ -4,14 +4,18 @@ export default function VehicleCard({ vehicle, onClick }) {
   const v = vehicle;
   const c = computeVehicle(v);
   const photos = Array.isArray(v.photos) && v.photos.length ? v.photos : v.foto ? [v.foto] : [];
-  const cover = photos[0];
+  // Daftar armada hanya mengirim satu foto (coverPhoto) supaya tidak menarik
+  // seluruh set base64 di setiap halaman. Endpoint detail mengirim `photos`
+  // lengkap, jadi keduanya dilayani dari sini tanpa perbedaan perilaku.
+  const cover = v.coverPhoto || photos[0] || null;
+  const photoCount = typeof v.photoCount === 'number' ? v.photoCount : photos.length;
 
   return (
     <button type="button" className="card" onClick={onClick} aria-label={`Buka detail ${v.merk || 'kendaraan'} ${v.plat || ''}`}>
       {cover && (
         <span className="card-photo-wrap">
-          <img className="card-photo" src={cover} alt={v.merk} />
-          {photos.length > 1 && <span className="card-photo-count">{photos.length} foto</span>}
+          <img className="card-photo" src={cover} alt={v.merk} loading="lazy" decoding="async" />
+          {photoCount > 1 && <span className="card-photo-count">{photoCount} foto</span>}
         </span>
       )}
       {v.lokasi && <span className="loc-tag">{v.lokasi}</span>}

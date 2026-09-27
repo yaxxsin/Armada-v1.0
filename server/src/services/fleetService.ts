@@ -85,17 +85,21 @@ export async function loadVehiclesPaginated({
        ORDER BY vehicle_id, tanggal DESC, id ASC
      ),
      vehicle_data AS (
-        -- Kolom foto dan photos sengaja dikeluarkan. Keduanya berisi data URL
-        -- base64 berukuran ratusan KB per kendaraan, sedangkan daftar armada
-        -- tidak menampilkan foto (FleetView tidak memakainya). Mengambilnya
-        -- berarti satu halaman daftar ikut menarik puluhan MB yang tidak
-        -- pernah dipakai. Foto diambil saat detail dibuka lewat
-        -- GET /api/vehicles/:id.
+        -- Daftar armada hanya butuh SATU foto (foto pertama) sebagai thumbnail,
+        -- bukan seluruh set. Operator photos->>0 mengambil elemen pertama
+        -- dari JSONB tanpa menarik array-nya, jadi satu halaman daftar tidak
+        -- ikut menarik puluhan MB gambar yang tidak ditampilkan. Foto
+        -- selengkapnya diambil saat detail dibuka via GET /api/vehicles/:id.
+        -- Kolom foto (legacy, satu foto) tetap jadi fallback.
        SELECT
          v.id, v.plat, v.merk, v.tahun, v.lokasi, v.pic,
          v.pajak_tahunan_berlaku, v.pajak_5tahunan_berlaku, v.keur_berlaku,
          v.interval_km, v.interval_bulan, v.km_sekarang, v.catatan,
          v.created_by, v.created_at,
+         COALESCE(
+           v.photos->>0,
+           CASE WHEN COALESCE(v.foto, '') <> '' THEN v.foto END
+         ) AS cover_photo,
          h.tanggal AS last_service_date, h.km AS last_service_km
        FROM vehicles v
        LEFT JOIN latest_history h ON h.vehicle_id = v.id
