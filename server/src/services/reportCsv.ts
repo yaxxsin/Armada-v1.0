@@ -51,8 +51,8 @@ const DETAIL_COLUMNS = [
   { header: 'Total Biaya Servis', value: (r: any) => r.serviceCostTotal },
   { header: 'Jumlah Pembacaan Odometer', value: (r: any) => r.odometerReadingCount },
   { header: 'Odometer Terakhir (Tanggal)', value: (r: any) => r.odometerHistory?.[0]?.tanggal || '' },
-  { header: 'Jumlah Foto', value: (r: any) => r.photoCount },
-  { header: 'Foto Utama', value: (r: any) => (r.photoCount > 0 ? 'ada' : 'tidak ada') },
+  { header: 'Jumlah Foto', value: (r: any) => r.photos.length },
+  { header: 'Foto Utama', value: (r: any) => (r.photos[0] ? 'ada' : 'tidak ada') },
   { header: 'Dibuat Pada', value: (r: any) => (r.createdAt ? formatDate(r.createdAt) : '') },
 ];
 

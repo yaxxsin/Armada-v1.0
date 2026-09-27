@@ -259,7 +259,7 @@ function vehiclesSheet(report: Report): Sheet {
         value: row.odometerHistory?.[0]?.tanggal ? formatDate(row.odometerHistory[0].tanggal) : '',
         type: 'date',
       },
-      { value: row.photoCount, type: 'number' },
+      { value: row.photos.length, type: 'number' },
       { value: row.createdAt ? formatDate(row.createdAt) : '', type: 'date' },
     ]);
   }
@@ -330,7 +330,7 @@ function serviceSheet(report: Report): Sheet {
         { value: entry.jenis || '' },
         { value: entry.bengkel || '' },
         { value: Number(entry.biaya) || 0, type: 'number' },
-        { value: entry.hasStruk ? 'Ya' : 'Tidak' },
+        { value: entry.struk ? 'Ya' : 'Tidak' },
       ]);
     }
   }

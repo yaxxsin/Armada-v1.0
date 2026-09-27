@@ -3,23 +3,11 @@ import { toDTO } from './dto.ts';
 import { overallStatus } from '../utils/fleet.ts';
 
 export async function loadAllVehicles() {
-  // Pemakai fungsi ini hanya stats dan snapshot, yang butuh status dan odometer
-  // saja. Kolom foto/base64 dikecualikan agar tidak ikut terbaca.
   const { rows: vehicles } = await query(
-    `SELECT
-       id, plat, merk, tahun, lokasi, pic,
-       pajak_tahunan_berlaku, pajak_5tahunan_berlaku, keur_berlaku,
-       interval_km, interval_bulan, km_sekarang, catatan,
-       created_by, created_at
-     FROM vehicles
-     ORDER BY created_at DESC`
+    `SELECT * FROM vehicles ORDER BY created_at DESC`
   );
   const { rows: hist } = await query(
-    // `struk` adalah data URL base64 dan tidak dipakai oleh pemanggil fungsi
-    // ini (hanya butuh tanggal dan km untuk perhitungan status).
-    `SELECT id, vehicle_id, tanggal, km, jenis, biaya, bengkel
-     FROM service_history
-     ORDER BY tanggal DESC NULLS LAST`
+    `SELECT * FROM service_history ORDER BY tanggal DESC NULLS LAST`
   );
   const byVehicle = new Map();
   for (const h of hist) {
@@ -85,22 +73,7 @@ export async function loadVehiclesPaginated({
        ORDER BY vehicle_id, tanggal DESC, id ASC
      ),
      vehicle_data AS (
-        -- Daftar armada hanya butuh SATU foto (foto pertama) sebagai thumbnail,
-        -- bukan seluruh set. Operator photos->>0 mengambil elemen pertama
-        -- dari JSONB tanpa menarik array-nya, jadi satu halaman daftar tidak
-        -- ikut menarik puluhan MB gambar yang tidak ditampilkan. Foto
-        -- selengkapnya diambil saat detail dibuka via GET /api/vehicles/:id.
-        -- Kolom foto (legacy, satu foto) tetap jadi fallback.
-       SELECT
-         v.id, v.plat, v.merk, v.tahun, v.lokasi, v.pic,
-         v.pajak_tahunan_berlaku, v.pajak_5tahunan_berlaku, v.keur_berlaku,
-         v.interval_km, v.interval_bulan, v.km_sekarang, v.catatan,
-         v.created_by, v.created_at,
-         COALESCE(
-           v.photos->>0,
-           CASE WHEN COALESCE(v.foto, '') <> '' THEN v.foto END
-         ) AS cover_photo,
-         h.tanggal AS last_service_date, h.km AS last_service_km
+       SELECT v.*, h.tanggal AS last_service_date, h.km AS last_service_km
        FROM vehicles v
        LEFT JOIN latest_history h ON h.vehicle_id = v.id
      ),
@@ -165,12 +138,7 @@ export async function loadVehiclesPaginated({
       .map((_, i) => `$${firstHistoryParam + i}`)
       .join(',');
     const { rows: rowsHist } = await query(
-      // Sama seperti di atas: `struk` (base64) tidak dipakai oleh daftar armada
-      // dan diambil terpisah saat detail kendaraan dibuka.
-      `SELECT id, vehicle_id, tanggal, km, jenis, biaya, bengkel
-       FROM service_history
-       WHERE vehicle_id IN (${placeholders})
-       ORDER BY tanggal DESC NULLS LAST`,
+      `SELECT * FROM service_history WHERE vehicle_id IN (${placeholders}) ORDER BY tanggal DESC NULLS LAST`,
       vehicleIds
     );
     hist = rowsHist;

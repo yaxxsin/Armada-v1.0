@@ -357,21 +357,16 @@ export default function App() {
   const openVehicleById = async (id: string) => {
     setDetailError(null);
     const localVehicle = fleet.find((vehicle) => String(vehicle.id) === String(id));
-    // Daftar armada tidak lagi membawa kolom foto, jadi detail selalu dimuat
-    // ulang dari server. Data lokal tetap ditampilkan lebih dulu supaya modal
-    // terbuka tanpa menunggu, lalu ditimpa hasil fetch yang memuat foto dan
-    // data terbaru.
-    setDetailVehicleOverride(localVehicle || null);
-    setDetailVehicleId(localVehicle ? localVehicle.id : id);
+    if (localVehicle) {
+      setDetailVehicleId(localVehicle.id);
+      setDetailVehicleOverride(null);
+      return;
+    }
     try {
       const response = await api(`/vehicles/${id}`);
       setDetailVehicleOverride(response.vehicle);
       setDetailVehicleId(response.vehicle.id);
     } catch (error) {
-      // Kalau data lokal sudah tampil, ini bukan kondisi gagal buka.
-      if (localVehicle) return;
-      setDetailVehicleOverride(null);
-      setDetailVehicleId(null);
       setDetailError(error instanceof Error ? error.message : 'Kendaraan tidak dapat dibuka.');
     }
   };
