@@ -1963,6 +1963,18 @@ h3 {
   font-size: 26px;
   text-align: center;
 }
+/* Halaman login tidak memakai .auth-sub, jadi jarak ke field pertama
+   perlu diatur langsung lewat sibling selector agar Register tidak berubah. */
+.auth-card h1 + .field { margin-top: 20px; }
+.auth-foot {
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--text-faint);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
 .auth-sub {
   color: var(--text-dim);
   font-size: 12px;

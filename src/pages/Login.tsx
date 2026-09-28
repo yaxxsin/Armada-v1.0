@@ -27,7 +27,6 @@ export default function Login() {
       <form className="auth-card" onSubmit={submit}>
         <img className="auth-logo" src="/armada-auth.png" alt="Armada Control 104 Group" width={80} height={80} />
         <h1>Armada Control</h1>
-        <div className="auth-sub">104 Group — masuk untuk melanjutkan</div>
 
         <div className="field">
           <label htmlFor="login-email">Email</label>
@@ -56,6 +55,8 @@ export default function Login() {
         <button className="btn" type="submit" disabled={busy}>
           {busy ? 'Memproses…' : 'Masuk'}
         </button>
+
+        <p className="auth-foot">&copy; 2026 104 Group</p>
       </form>
     </div>
   );
