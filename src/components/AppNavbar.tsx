@@ -43,7 +43,7 @@ const styles = `
     align-items: center;
     gap: 12px;
     margin: 0 auto;
-    padding: 9px 10px;
+    padding: 6px 10px;
     border: 1px solid rgba(255, 255, 255, 0.72);
     border-radius: 28px;
     background: rgba(255, 255, 255, 0.88);
@@ -53,16 +53,18 @@ const styles = `
   .ac-navbar__brand {
     display: inline-grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
-    flex: 0 0 44px;
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    padding: 0;
     border: 0;
     border-radius: 14px;
-    color: #fff;
-    background: #15171b;
+    background: transparent;
     cursor: pointer;
+    transition: transform 160ms ease;
   }
-  .ac-navbar__mark { font: 800 18px 'Inter', sans-serif; letter-spacing: -0.08em; }
+  .ac-navbar__brand:hover { transform: scale(1.04); }
+  .ac-navbar__logo { display: block; width: 100%; height: 100%; object-fit: contain; }
   .ac-navbar__nav { display: flex; align-items: center; justify-content: center; flex: 1; min-width: 0; }
   .ac-navbar__links { display: flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 999px; background: var(--panel2); }
   .ac-navbar__link {
@@ -184,7 +186,7 @@ export default function AppNavbar({ activeView, user, reminderCount, notificatio
       <style>{styles}</style>
       <header className="ac-navbar">
         <div className="ac-navbar__inner">
-          <button type="button" className="ac-navbar__brand" onClick={() => navigate('dashboard')} aria-label="Buka dashboard Armada Control"><span className="ac-navbar__mark" aria-hidden="true">A/</span></button>
+          <button type="button" className="ac-navbar__brand" onClick={() => navigate('dashboard')} aria-label="Buka dashboard Armada Control"><img className="ac-navbar__logo" src="/armada-navbar.png" alt="" width={56} height={56} /></button>
           <nav id="app-navbar-menu" className="ac-navbar__nav" aria-label="Navigasi utama" data-open={mobileOpen}>
             <div className="ac-navbar__links">
               {visibleItems.map((item) => (

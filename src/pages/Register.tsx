@@ -40,6 +40,7 @@ export default function Register({ onRegistered }: RegisterProps) {
   return (
     <div className="auth-wrap">
       <form className="auth-card" onSubmit={submit}>
+        <img className="auth-logo" src="/armada-auth.png" alt="Armada Control 104 Group" width={80} height={80} />
         <h1>Buat Akun</h1>
         <div className="auth-sub">
           Registrasi membutuhkan kode owner untuk akun pertama atau kode undangan dari admin.

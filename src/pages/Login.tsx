@@ -25,6 +25,7 @@ export default function Login() {
   return (
     <div className="auth-wrap">
       <form className="auth-card" onSubmit={submit}>
+        <img className="auth-logo" src="/armada-auth.png" alt="Armada Control 104 Group" width={80} height={80} />
         <h1>Armada Control</h1>
         <div className="auth-sub">104 Group — masuk untuk melanjutkan</div>
 
